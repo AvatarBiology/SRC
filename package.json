@@ -1,0 +1,8 @@
+{
+  "name": "secure-gemini-proxy",
+  "version": "1.0.0",
+  "description": "A secure proxy for Gemini API calls, designed for the science fair tutor project.",
+  "dependencies": {
+    "node-fetch": "^2.6.7"
+  }
+}

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科研探究顧問 - 阿凡達的指導網頁</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+        }
+        .stage-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .stage-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        .chat-bubble-user {
+            background-color: #3b82f6; /* blue-500 */
+            color: white;
+        }
+        .chat-bubble-ai {
+            background-color: #e5e7eb; /* gray-200 */
+            color: #1f2937; /* gray-800 */
+        }
+        .modal-content {
+            animation: slide-up 0.5s ease-out;
+        }
+        @keyframes slide-up {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <!-- Project Type Selection Screen -->
+    <div id="project-type-selection" class="min-h-screen flex flex-col items-center justify-center bg-gray-900 text-white p-4">
+        <div class="text-center">
+            <i class="fas fa-flask-vial text-5xl text-cyan-400 mb-4"></i>
+            <h1 class="text-4xl md:text-5xl font-bold mb-8">歡迎踏上「科研探究之路」!</h1>
+            <p class="text-lg md:text-xl text-gray-300 mb-2">您的 AI 研究顧問「阿凡達」已上線😄</p>
+            <p class="text-lg md:text-xs text-yellow-400 mb-8">請注意：阿凡達會引導你進行探究和實作、回答你的疑問並給予建議，但不會直接告訴你要做什麼</p>
+            <p class="text-xl font-semibold mb-6">首先，請選擇您的研究專案類型：</p>
+        </div>
+        <div class="flex flex-col md:flex-row gap-6">
+            <button onclick="selectProjectType('scienceFair')" class="bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg transition duration-300 transform hover:scale-105">
+                <i class="fas fa-atom mr-2"></i>科學展覽 (科展)
+            </button>
+            <button onclick="selectProjectType('smallThesis')" class="bg-purple-500 hover:bg-purple-600 text-white font-bold py-4 px-8 rounded-lg text-xl shadow-lg transition duration-300 transform hover:scale-105">
+                <i class="fas fa-book-open mr-2"></i>小論文寫作
+            </button>
+        </div>
+    </div>
+
+    <!-- Main App Screen -->
+    <div id="main-app" class="hidden">
+        <header class="bg-white shadow-md p-4 sticky top-0 z-20">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800"><i class="fas fa-flask-vial text-cyan-500"></i> 科研探究之路</h1>
+                <div id="project-type-display" class="text-lg font-semibold bg-gray-200 text-gray-700 px-4 py-1 rounded-full"></div>
+            </div>
+        </header>
+
+        <main class="container mx-auto p-4 md:p-8">
+            <h2 class="text-3xl font-bold text-center mb-4">研究的六大階段</h2>
+            <p class="text-center text-gray-600 mb-12 max-w-3xl mx-auto">點擊任一階段卡片，即可查看詳細指引並與您的AI顧問「阿凡達老師」對話，開始您的探究之旅。</p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Stage cards will be injected here by JavaScript -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal for Stage Details and Chat -->
+    <div id="stage-modal" class="hidden fixed inset-0 bg-black bg-opacity-60 z-50 flex items-center justify-center p-4">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl w-full max-w-6xl h-[90vh] flex flex-col overflow-hidden">
+            <!-- Modal Header -->
+            <div class="flex justify-between items-center p-4 border-b border-gray-200 bg-gray-50 rounded-t-2xl">
+                <h3 id="modal-title" class="text-2xl font-bold"></h3>
+                <button onclick="closeModal()" class="text-gray-500 hover:text-gray-800 text-2xl">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="flex-grow flex flex-col md:flex-row overflow-hidden">
+                <!-- Guidance Panel -->
+                <div id="guidance-panel" class="w-full md:w-1/2 p-6 overflow-y-auto bg-gray-50 border-r border-gray-200">
+                    <!-- Guidance content will be injected here -->
+                </div>
+
+                <!-- Chat Panel -->
+                <div class="w-full md:w-1/2 flex flex-col h-full">
+                    <div class="p-4 bg-blue-600 text-white text-center rounded-t-none md:rounded-tr-none">
+                        <h4 class="text-lg font-semibold">與AI顧問「阿凡達」對話</h4>
+                        <p class="text-sm opacity-90">遇到困難嗎？試著向老師提問吧！</p>
+                    </div>
+                    <div id="chat-window" class="flex-grow p-4 overflow-y-auto bg-white">
+                        <!-- Chat messages will be appended here -->
+                    </div>
+                    <div id="chat-input-container" class="p-4 border-t border-gray-200 bg-gray-100">
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="chat-input" class="flex-grow w-full px-4 py-3 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="在這裡輸入您的問題...">
+                            <button onclick="sendMessage()" class="bg-blue-500 text-white rounded-full w-12 h-12 flex items-center justify-center hover:bg-blue-600 transition-colors">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA & CONFIGURATION ---
+
+        let currentProjectType = '';
+        let currentStage = null;
+        let chatHistory = [];
+
+        const stages = [
+            { id: 1, title: '發想與定範', icon: 'fa-lightbulb', color: 'bg-yellow-400' },
+            { id: 2, title: '文獻探討與脈絡化', icon: 'fa-book', color: 'bg-blue-400' },
+            { id: 3, title: '研究設計與計畫', icon: 'fa-sitemap', color: 'bg-green-400' },
+            { id: 4, title: '執行與資料收集', icon: 'fa-vial', color: 'bg-red-400' },
+            { id: 5, title: '分析與詮釋', icon: 'fa-chart-pie', color: 'bg-indigo-400' },
+            { id: 6, title: '溝通與傳播', icon: 'fa-bullhorn', color: 'bg-purple-400' },
+        ];
+
+        const guidanceContent = {
+            scienceFair: {
+                1: {
+                    title: "第一階段：發想與定範",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">從廣泛的興趣中，收斂出一個大小適中、具體且可透過「科學方法」檢驗的研究題目。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>從生活經驗、課程內容或鄉土議題中尋找靈感。</li>
+                            <li>進行腦力激盪，用心智圖等工具發散思考。</li>
+                            <li>將大主題逐步限縮，定義出清晰的研究問題。</li>
+                            <li>評估題目的可行性（資源、時間、安全）。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>一個好的科展題目，關鍵在於「可驗證性」。試著問自己：這個問題能透過實驗來找到答案嗎？</p>
+                    `
+                },
+                2: {
+                    title: "第二階段：文獻探討",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">了解前人研究成果，找到自己研究的獨特定位（研究缺口），並證明你的研究具有「創意」。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>使用Google學術、華藝線上圖書館等資源搜尋關鍵字。</li>
+                            <li>閱讀與主題相關的論文或報告，並做筆記。</li>
+                            <li>分析前人研究的優點與不足之處。</li>
+                            <li>找出別人「沒做過」或「可以改進」的地方，這就是你的創意來源。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>「創意」不是天馬行空，而是站在巨人的肩膀上。讀懂前人的研究，是創新的第一步。</p>
+                    `
+                },
+                 3: {
+                    title: "第三階段：研究設計與計畫",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">規劃出嚴謹、可重複執行的實驗步驟，這是科展的靈魂！</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>明確定義「操縱變因」、「應變變因」與所有「控制變因」。</li>
+                            <li>設計合理的「實驗組」與「對照組」。</li>
+                            <li>撰寫詳盡的實驗步驟，讓別人能照著你的步驟重複實驗。</li>
+                            <li>列出所有材料清單，並進行安全評估。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p class="font-semibold text-red-600">變因控制是科展成敗的關鍵！試著問自己：除了我想測試的變因，還有哪些因素可能會影響結果？我該如何讓它們保持不變？</p>
+                    `
+                },
+                4: {
+                    title: "第四階段：執行與資料收集",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">按照計畫進行實驗，並詳實、誠實地記錄所有數據與觀察。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>嚴格遵守實驗步驟與安全規範。</li>
+                            <li>準備一本「研究日誌」，記錄每天的操作、數據、觀察，甚至是失敗的嘗試。</li>
+                            <li>拍照或錄影記錄重要過程。</li>
+                            <li>系統化地整理原始數據。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>「研究日誌」是研究真實性的最佳證明，評審非常重視！記得，失敗的數據和成功的數據一樣有價值。</p>
+                    `
+                },
+                5: {
+                    title: "第五階段：分析與詮釋",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">賦予數據意義，從客觀的「結果」中，提煉出有深度的「討論」。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>使用統計方法（如平均值、標準差）整理數據。</li>
+                            <li>製作清晰的圖表（長條圖、折線圖等）來呈現數據。</li>
+                            <li>在「結果」部分，只客觀描述數據。</li>
+                            <li>在「討論」部分，解釋數據背後的意義、與文獻比較、並誠實點出研究限制。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>切記區分「結果」（你看到了什麼）和「討論」（這代表了什麼）。能深入討論，才代表你真正理解了自己的研究。</p>
+                    `
+                },
+                6: {
+                    title: "第六階段：溝通與傳播",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">將研究成果以清晰、有邏輯的方式，透過「作品說明書」與「海報」呈現出來，並準備好口頭答辯。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>依照IMRaD架構撰寫作品說明書。</li>
+                            <li>設計一張能「說故事」的海報，重點是圖表與精簡文字。</li>
+                            <li>練習在3-5分鐘內介紹完你的研究。</li>
+                            <li>準備好回答評審可能提出的問題（特別是關於「為什麼」）。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>評審最想知道的，是你是否真的「親身」投入研究。準備答辯時，多回想研究過程中的困難與心得，這比背稿更重要。</p>
+                    `
+                },
+            },
+            smallThesis: {
+                1: {
+                    title: "第一階段：發想與定範",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">從廣泛的興趣中，收斂出一個大小適中、具體且能透過「文獻探討」深入分析的研究題目。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>從課程內容、社會時事或個人關懷中尋找靈感。</li>
+                            <li>進行初步的資料搜尋，確認主題有足夠的參考資料。</li>
+                            <li>將大主題逐步限縮，定義出清晰的研究問題。</li>
+                            <li>思考這個題目是否具有探討的價值與意義。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>一個好的小論文題目，關鍵在於「可論證性」。試著問自己：這個問題能透過整理、分析現有資料來提出自己的觀點嗎？</p>
+                    `
+                },
+                2: {
+                    title: "第二階段：文獻探討",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">大量且深入地閱讀相關文獻，對主題建立全面的理解，並為自己的論點找到支撐的證據。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>使用Google學術、華藝線上圖書館等資源進行系統性搜尋。</li>
+                            <li>批判性地閱讀文獻，不僅是摘要，更要分析其論點與證據。</li>
+                            <li>整理不同文獻的觀點，比較其異同。</li>
+                            <li>開始建立自己的論點，並思考如何用這些文獻來支持它。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>文獻探討是小論文的血肉。你的觀點是否站得住腳，完全取決於你對文獻的掌握深度。記得，引經據典是核心！</p>
+                    `
+                },
+                3: {
+                    title: "第三階段：研究設計與計畫",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">建立清晰的論文架構與論證邏輯，這是小論文的骨架。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>規劃論文的大綱，包含前言、正文（數個段落）、結論。</li>
+                            <li>決定你的分析框架或比較基準。</li>
+                            <li>構思你的核心論點，以及各段落如何支撐這個核心論點。</li>
+                            <li>撰寫「前言」，清楚說明研究動機、目的與範圍。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>在動筆寫內文前，先花時間把大綱想清楚，會讓你的寫作過程事半功倍，並確保文章邏輯通順。</p>
+                    `
+                },
+                4: {
+                    title: "第四階段：執行與資料收集",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">根據你的論文架構，系統性地整理、彙整你所收集到的文獻資料。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>將找到的資料分門別類，對應到你的論文大綱各個段落。</li>
+                            <li>摘錄重要的引文、數據或觀點，並確實記下出處。</li>
+                            <li>開始撰寫「正文」的草稿。</li>
+                            <li>使用Zotero或Mendeley等工具管理你的參考文獻。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>從一開始就做好引用的紀錄，可以避免最後整理參考資料時的混亂，也能有效避免抄襲的疑慮。</p>
+                    `
+                },
+                5: {
+                    title: "第五階段：分析與詮釋",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">在整理好的資料基礎上，提出自己的分析、比較與批判，形成獨特的個人創見。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>不只是陳述資料，更要比較不同觀點的優劣。</li>
+                            <li>分析現象背後的原因或影響。</li>
+                            <li>從整理的資料中，提煉出你自己的核心論點。</li>
+                            <li>撰寫「結論」，總結你的發現並提出建議。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p>小論文的價值在於你的「觀點」。評審想看的不是資料整理，而是你如何運用這些資料，提出有見地的分析。</p>
+                    `
+                },
+                6: {
+                    title: "第六階段：溝通與傳播",
+                    content: `
+                        <h4 class="text-xl font-bold mb-3">目標</h4>
+                        <p class="mb-4">完成一篇結構完整、格式正確、具說服力的論文。</p>
+                        <h4 class="text-xl font-bold mb-3">核心任務</h4>
+                        <ul class="list-disc list-inside space-y-2 mb-4">
+                            <li>依照比賽規定，嚴格檢查論文格式（頁數、字體、邊界等）。</li>
+                            <li>再三確認「引註資料」的格式是否正確。</li>
+                            <li>通讀全文，修改不通順的語句與錯別字。</li>
+                            <li>請同學或老師幫忙閱讀，提供回饋意見。</li>
+                        </ul>
+                        <h4 class="text-xl font-bold mb-3">阿凡達老師的提醒</h4>
+                        <p class="font-semibold text-red-600">小論文的「格式」是生死線！任何格式錯誤都可能導致直接被刷掉。提交前，務必逐條對照比賽簡章的規定進行檢查。</p>
+                    `
+                },
+            }
+        };
+
+        // --- DOM ELEMENTS ---
+        const projectTypeSelectionDiv = document.getElementById('project-type-selection');
+        const mainAppDiv = document.getElementById('main-app');
+        const projectTypeDisplayDiv = document.getElementById('project-type-display');
+        const stageGrid = document.querySelector('.grid');
+        const modal = document.getElementById('stage-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const guidancePanel = document.getElementById('guidance-panel');
+        const chatWindow = document.getElementById('chat-window');
+        const chatInput = document.getElementById('chat-input');
+        const chatInputContainer = document.getElementById('chat-input-container');
+
+        // --- FUNCTIONS ---
+
+        function initializeApp() {
+            chatInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendMessage();
+                }
+            });
+        }
+
+        function selectProjectType(type) {
+            currentProjectType = type;
+            projectTypeSelectionDiv.classList.add('hidden');
+            mainAppDiv.classList.remove('hidden');
+            
+            const typeName = type === 'scienceFair' ? '科學展覽' : '小論文寫作';
+            const typeColor = type === 'scienceFair' ? 'bg-cyan-100 text-cyan-800' : 'bg-purple-100 text-purple-800';
+            projectTypeDisplayDiv.textContent = typeName;
+            projectTypeDisplayDiv.className = `text-lg font-semibold px-4 py-1 rounded-full ${typeColor}`;
+
+            renderStageCards();
+        }
+
+        function renderStageCards() {
+            stageGrid.innerHTML = '';
+            stages.forEach(stage => {
+                const card = `
+                    <div class="stage-card bg-white rounded-xl shadow-lg overflow-hidden cursor-pointer" onclick="openModal(${stage.id})">
+                        <div class="${stage.color} p-6 text-white text-center">
+                            <i class="fas ${stage.icon} text-5xl"></i>
+                        </div>
+                        <div class="p-6">
+                            <h3 class="text-xl font-bold text-center">${stage.id}. ${stage.title}</h3>
+                        </div>
+                    </div>
+                `;
+                stageGrid.innerHTML += card;
+            });
+        }
+
+        function openModal(stageId) {
+            currentStage = stages.find(s => s.id === stageId);
+            const content = guidanceContent[currentProjectType][stageId];
+            
+            modalTitle.textContent = content.title;
+            guidancePanel.innerHTML = content.content;
+            
+            chatHistory = [{
+                role: "model",
+                parts: [{ text: `這裡是第${currentStage.id}階段：${currentStage.title}。歡迎提出你想法想跟我討論!或是有遇到什麼問題也可以提出喲!` }]
+            }];
+            renderChat();
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            modal.classList.add('hidden');
+            currentStage = null;
+            chatHistory = [];
+        }
+
+        function renderChat() {
+            chatWindow.innerHTML = '';
+            chatHistory.forEach(msg => {
+                const bubble = document.createElement('div');
+                bubble.classList.add('mb-4', 'p-3', 'rounded-lg', 'max-w-md', 'break-words');
+                
+                if (msg.role === 'user') {
+                    bubble.classList.add('chat-bubble-user', 'ml-auto');
+                } else {
+                    bubble.classList.add('chat-bubble-ai', 'mr-auto');
+                }
+                bubble.textContent = msg.parts[0].text;
+                chatWindow.appendChild(bubble);
+            });
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+        
+        function showLoadingIndicator() {
+            const loadingBubble = document.createElement('div');
+            loadingBubble.id = 'loading-bubble';
+            loadingBubble.classList.add('mb-4', 'p-3', 'rounded-lg', 'max-w-md', 'mr-auto', 'chat-bubble-ai');
+            loadingBubble.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 阿凡達老師正在思考中...';
+            chatWindow.appendChild(loadingBubble);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function removeLoadingIndicator() {
+            const loadingBubble = document.getElementById('loading-bubble');
+            if (loadingBubble) {
+                loadingBubble.remove();
+            }
+        }
+
+        // MODIFIED FUNCTION
+        async function sendMessage() {
+            const userMessage = chatInput.value.trim();
+            if (!userMessage) return;
+
+            chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
+            renderChat();
+            chatInput.value = '';
+            showLoadingIndicator();
+
+            const projectTypeName = currentProjectType === 'scienceFair' ? '科學展覽' : '小論文寫作';
+            const personaPrompt = `
+                你現在是一位擁有超過20年經驗的台灣高中科學展覽與小論文指導顧問，名為「阿凡達老師」。你的使命是引導、啟發並支持高中生完成高品質的科學研究項目。你是一位思考的催化劑與研究的領航員，而不是答案的提供者或代筆寫手。
+                
+                核心原則：
+                1.  **蘇格拉底式引導**：你的核心能力是使用開放性問題來啟發學生自主思考，而不是直接給答案。
+                2.  **平衡教學原則 (重要！)**：當學生提出一個可以直接回答的「事實型」或「定義型」問題時（例如：「什麼是IMRaD架構？」、「什麼是控制變因？」），你必須先提供一個清晰、簡潔的直接答案。在給出答案後，立刻轉回蘇格拉底式提問，引導學生思考如何「應用」這個知識。例如：「IMRaD是一種論文的標準結構，代表前言、方法、結果與討論。很好，現在你知道了這個架構，你認為可以如何運用它來規劃你的報告章節呢？」這個原則是為了避免在學生需要基礎知識時過於迂迴。
+                3.  **情境感知**：學生目前正在進行「${projectTypeName}」專案的第${currentStage.id}階段：「${currentStage.title}」。你所有的回答都必須緊扣這個階段的核心任務與挑戰。
+                4.  **角色扮演**：始終以「阿凡達老師」的溫和、專業且具啟發性的語氣進行互動。不要提及你是AI或語言模型。
+
+                學生的對話歷史如下，請根據最新的問題提供引導。
+            `;
+
+            const fullHistory = [
+                { role: "user", parts: [{ text: personaPrompt }] },
+                { role: "model", parts: [{ text: "好的，我明白了。我將扮演阿凡達老師的角色，根據學生目前的專案類型與階段，並採用『平衡教學原則』來引導他。" }] },
+                ...chatHistory
+            ];
+            
+            const payload = {
+                contents: fullHistory,
+            };
+            
+            const apiUrl = `/.netlify/functions/gemini`; // API URL points to our backend function
+
+            try {
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!response.ok) {
+                    const errorResult = await response.json();
+                    throw new Error(errorResult.error || `請求失敗，狀態碼: ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                removeLoadingIndicator();
+
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content) {
+                    const aiMessage = result.candidates[0].content.parts[0].text;
+                    chatHistory.push({ role: "model", parts: [{ text: aiMessage }] });
+                } else {
+                    const errorMessage = result.error ? result.error.message : "從伺服器收到了無效的回應格式。";
+                    chatHistory.push({ role: "model", parts: [{ text: `抱歉，發生錯誤：${errorMessage}` }] });
+                }
+                renderChat();
+
+            } catch (error) {
+                console.error('Error calling backend function:', error);
+                removeLoadingIndicator();
+                chatHistory.push({ role: "model", parts: [{ text: `發生了一個錯誤：${error.message}。請檢查您的網路連線或稍後再試。` }] });
+                renderChat();
+            }
+        }
+
+        // --- INITIALIZATION ---
+        initializeApp();
+
+    </script>
+</body>
+</html>

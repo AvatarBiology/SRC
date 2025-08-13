@@ -1,6 +1,5 @@
-# SRC
-An AI-powered Scientific Research Consultant
-
+# SRC (An AI-powered Scientific Research Consultant)
+https://avatarbiology-src.netlify.app/
 ---
 # 科研探究顧問 (Science Fair & Thesis Advisor)
 這是一個互動式網頁應用程式，旨在引導高中生逐步完成「科學展覽」或「小論文寫作」的研究歷程。本專案的核心是一位名為**「阿凡達」的 AI 顧問**，它採用蘇格拉底式的引導方法，啟發學生自主思考，同時在必要時提供清晰的知識性解答。

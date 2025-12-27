@@ -21,7 +21,7 @@ exports.handler = async function(event) {
     // Parse the conversation history sent from the frontend.
     const { contents } = JSON.parse(event.body);
 
-    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemma-3-27b-it:generateContent?key=${apiKey}`;
 
     // Make the request to the Google Gemini API on behalf of the frontend.
     const response = await fetch(apiUrl, {
